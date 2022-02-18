@@ -20,27 +20,27 @@ Use whatever python tools you find apropriate. We recommend seaborn for plotting
 
 ### Day 1, Phase 2
 
-- [ ] The class you decide the create for the project has finally been named after a brief fight and is __PEP8 compliant, like the entire project__.
+- [Lotfi] The class you decide the create for the project has finally been named after a brief fight and is __PEP8 compliant, like the entire project__.
 
 The class will have several methods, which you will __not__ develop in the master branch.  
 Document everything!  
 Make your calls compliant with __Static Type Checking__.
 
-- [ ] One method will _download_ the data file into a __downloads/__ directory in the root directory of the project (main project directory). If the data file already exists, the method will not download it again.
-- [ ] This method must also read the dataset into a pandas dataframe which is an attribute of your class. Consider only years after 1970, inclusively.
+- [Lotfi] One method will _download_ the data file into a __downloads/__ directory in the root directory of the project (main project directory). If the data file already exists, the method will not download it again.
+- [Lotfi] This method must also read the dataset into a pandas dataframe which is an attribute of your class. Consider only years after 1970, inclusively.
 
 ## Day 1, Phase 3
 
-- [ ] Develop a second method that outputs a list of the available countries in the data set.
-- [ ] Develop a third method that plots an area chart of the "\_consumption" columns. This method should have two arguments: a __country__ argument and a __normalize__ argument. The latter normalizes the consumption in relative terms: each year, consumption should always be 100%.
-- [ ] The latter method should return a ValueError when the chosen country does not exist.
-- [ ] Develop a fourth method that may receive a string with a country or a list of country strings. This method should compare the total of the "\_consumption" columns for each of the chosen countries and plot it, so a comparison can be made.
-- [ ] Develop a fifth method that may receive a string with a country or a list of country strings. This method should compare the "gdp" column of each country over the years.
-- [ ] Develop a sixth method that must be called __gapminder__. This is a reference to the famous [gapminder tools](https://www.gapminder.org/tools/#$chart-type=bubbles&url=v1). This method should receive an argument __year__ which must be an __int__. If the received argument is not an int, the method should raise a TypeError. This method should plot a scatter plot where __x__ is __gdp__, __y__ is __total energy consumption__, and the area of each dot is __population__. 
+- [Edwin] Develop a second method that outputs a list of the available countries in the data set.
+- [Edwin] Develop a third method that plots an area chart of the "\_consumption" columns. This method should have two arguments: a __country__ argument and a __normalize__ argument. The latter normalizes the consumption in relative terms: each year, consumption should always be 100%.
+- [Edwin] The latter method should return a ValueError when the chosen country does not exist.
+- [Bilal] Develop a fourth method that may receive a string with a country or a list of country strings. This method should compare the total of the "\_consumption" columns for each of the chosen countries and plot it, so a comparison can be made.
+- [Bilal] Develop a fifth method that may receive a string with a country or a list of country strings. This method should compare the "gdp" column of each country over the years.
+- [Bilal] Develop a sixth method that must be called __gapminder__. This is a reference to the famous [gapminder tools](https://www.gapminder.org/tools/#$chart-type=bubbles&url=v1). This method should receive an argument __year__ which must be an __int__. If the received argument is not an int, the method should raise a TypeError. This method should plot a scatter plot where __x__ is __gdp__, __y__ is __total energy consumption__, and the area of each dot is __population__. 
 
 ### Day 1, Phase 4
 
-- [ ] Make a "showcase notebook" where you import your __Class__ and showcase all the methods you developed. Tell a story about your analysis and findings in the showcase notebook:
+- [Tamas] Make a "showcase notebook" where you import your __Class__ and showcase all the methods you developed. Tell a story about your analysis and findings in the showcase notebook:
 
 Let's begin by telling a story.
 

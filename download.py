@@ -31,6 +31,5 @@ def download_file(file_link: str, output_file: str='file.csv'):
         print("File already exists !")
         data = pd.read_csv(output_file)
     data = data[data["year"]>= 1970]
-
     return data
-
+    

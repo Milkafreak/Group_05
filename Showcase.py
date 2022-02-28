@@ -19,11 +19,44 @@ class Energy:
     
     #METHOD 2
     def country_list(self):
+     """
+    Lists all unique countries that are in the given Energy.csv File in the "country" column
+    Parameters
+    ------------
+   
+    Returns
+    ---------
+    List of countries in country column. 
+    
+    Example
+    ---------
+    x.country_list()
+    with x being an Energy class object.
+    """
         self.data = download_file(self.link, "Energy.csv")
         return self.data["country"].unique()
     
     #METHOD 3
     def plot_consumption(self,country: str,normalize: bool):
+    """
+    Plots all _consumption columns data of the Energy.csv file of a given country. If the country parameter does not exist, it returns a ValueError. 
+    Parameters
+    ------------
+    Country: str
+        A string containing the desired country. 
+    normalize: bool
+        A boolean value. When True, the graph should show normalized values. When false, show given values. 
+   
+    Returns
+    ---------
+    Value Error
+    Plot with each consumption column as a colored graph of one particular country. 
+    
+    Example
+    ---------
+    x.plot_consumption("France",normalize=True)
+    with x being an Energy class object.
+    """
         self.data = download_file(self.link, "Energy.csv")
         
         #Return Value error if the given country is not in the countries list

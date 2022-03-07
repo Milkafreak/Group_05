@@ -6,7 +6,7 @@ import pandas as pd # type: ignore
 sys.path.append("./Methods")
 plt.style.use('seaborn')
 #pylint: disable=wrong-import-position
-from download import download_file # type: ignore #pylint: disable=wrong-import-position
+from download import download_file #pylint: disable=wrong-import-position
 
 class EnergyClass:
     '''
@@ -88,10 +88,12 @@ class EnergyClass:
             df2 = pd.DataFrame(x_scaled,columns=values.columns)
             df2["year"] = self.data[self.data["country"] == country][
                 self.data.columns[
-                    self.data.columns.str.contains("_consumption|year|country")]]["year"].reset_index(drop=True)
+                    self.data.columns.str.contains("_consumption|year|country")]
+            ]["year"].reset_index(drop=True)
             df2["country"] = self.data[self.data["country"] == country][
                 self.data.columns[
-                    self.data.columns.str.contains("_consumption|year|country")]]["country"].reset_index(drop=True)
+                    self.data.columns.str.contains("_consumption|year|country")]
+            ]["country"].reset_index(drop=True)
         #Plot all consumption
         liste = []
         for col in df2.columns:
@@ -146,7 +148,7 @@ class EnergyClass:
             value = f_df[f_df["country"] == country]["TOTAL_energy_consumption"].values[0]
             loca.append(country)
             val.append(value)
-        fig = plt.figure(figsize = (10, 5))
+        fig = plt.figure(figsize = (10, 5)) # pylint: disable=unused-variable
         plt.bar(loca, val, color ='purple', width = 0.8)
         plt.xlabel("Countries")
         plt.ylabel("Energy Consumption")
@@ -171,7 +173,7 @@ class EnergyClass:
             self.download()
         #create new dataframe made of three columns: "country", "year", and "gdp"
         gdp_df = self.data[["country", "year", "gdp"]]
-        figure, axis = plt.subplots()
+        figure, axis = plt.subplots() # pylint: disable=unused-variable
         temp = []
         flag = 0
         for country in countries:

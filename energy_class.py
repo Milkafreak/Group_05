@@ -123,7 +123,7 @@ class EnergyClass:
         df_consumption = self.data.filter(like = "_consumption")
         df_country = self.data[["country"]]#get the df of the country column
         #merge the two dfs into 'df' having the columns of country and all the consumptions
-        df_countries = pd.merge(df_country, df_consumption, left_index = True, right_index = True)
+        df_countries = pd.concat(df_country, df_consumption, axis=1)
         #group by countries and compute the averge of each consumption over the years
         #'new_df' having index label as country and counsumptions columns
         new_df = df_countries.groupby("country").mean()

@@ -197,8 +197,8 @@ class EnergyClass:
         if self.file is False:
             self.download()
         #'tempdf1' having one column representing the sum of all consumptions per country per year with redudant columns removed
-        if type(year) not in [int]:
-            raise TypeError("variable 'Year' is not an int")
+        # if type(year) not in [int]:
+            # raise TypeError("variable 'Year' is not an int")
         tempdf1 = df[df.index.year==year].filter(like="_consumption").drop(["fossil_fuel_consumption","low_carbon_consumption","renewables_consumption","primary_energy_consumption"],axis=1).sum(axis=1).to_frame()
         tempdf2 = df[df.index.year == year][["country", "gdp", "population"]]
         tempdf3 = pd.merge(tempdf1, tempdf2, left_index = True, right_index = True)

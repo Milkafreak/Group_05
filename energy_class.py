@@ -62,7 +62,7 @@ class EnergyClass:
         if self.file is False:
             self.download()
         return self.data["country"].unique()
-    def plot_consumption(self,country: str,normalize: bool):
+    def plot_consumption(self,country: str,normalize: bool = "False"):
         '''
         Plot the consumption of the desired country in terms of different energy sources
         Parameters
@@ -73,36 +73,28 @@ class EnergyClass:
         plot
         Example
         ---------
-        x.plot_consumptiont("Portugal")
+        x.plot_consumptiont("Portugal",normalize =True)
         with x being an EnergyClass object.
         '''
         if self.file is False:
             self.download()
         if country not in self.data["country"].unique():
             raise ValueError("Variable is not part of the countries in the dataframe.")
+
         if normalize is False:
-            df2 = self.data[ self.data["country"] == country][self.data.columns[
-                self.data.columns.str.contains( "_consumption|country|year" )]]
+            df2 = self.data[ self.data["country"] == country][self.data.columns[self.data.columns.str.contains( "_consumption|country|year" )]]
             df2 = df2.drop(["fossil_fuel_consumption","low_carbon_consumption","renewables_consumption","primary_energy_consumption"],axis=1)
+
         else: #Normalize Data
-            values = self.data[self.data["country"] == country][
-                self.data.columns[self.data.columns.str.contains("_consumption")]]
+            values = self.data[self.data["country"] == country][self.data.columns[self.data.columns.str.contains("_consumption")]]
+            values = values.drop(["fossil_fuel_consumption","low_carbon_consumption","renewables_consumption","primary_energy_consumption"],axis=1)
             values = values.fillna(0)
             x_scaled = values.div(values.sum(axis=1), axis=0).reset_index(drop=True)
-            df2 = pd.DataFrame(x_scaled,columns=values.columns)
-            df2["year"] = self.data[self.data["country"] == country][self.data.columns[self.data.columns.str.contains("_consumption|year|country")]]["year"].reset_index(drop=True)
-            df2["country"] = self.data[self.data["country"] == country][self.data.columns[self.data.columns.str.contains("_consumption|year|country")]]["country"].reset_index(drop=True)
-            df2 = df2.drop(["fossil_fuel_consumption","low_carbon_consumption","renewables_consumption","primary_energy_consumption"],axis=1)
+            x_scaled.index = self.data[self.data["country"] == country][self.data.columns[self.data.columns.str.contains("_consumption|country")]].index
+            df2 = x_scaled
         #Plot all consumption
-        liste = []
-        for col in df2.columns:
-            liste.append(col)
-        # liste.remove("country")
-        col = df2["year"]
-        for inp in liste:
-            i = df2[inp]
-            plt.plot(col,i,label = inp)
-            plt.legend()
+        df2.plot.area()
+    
     def energy_compare(self, countries: list):
         '''
         Takes a list of countries and iterates over it to find the\

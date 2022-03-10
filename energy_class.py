@@ -97,8 +97,7 @@ class EnergyClass:
         liste = []
         for col in df2.columns:
             liste.append(col)
-        liste.remove("year")
-        liste.remove("country")
+        # liste.remove("country")
         col = df2["year"]
         for inp in liste:
             i = df2[inp]

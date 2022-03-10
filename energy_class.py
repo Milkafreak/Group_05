@@ -201,7 +201,7 @@ class EnergyClass:
             # raise TypeError("variable 'Year' is not an int")
         tempdf1 = self.data[self.data.index.year == year].filter(like="_consumption").drop(["fossil_fuel_consumption","low_carbon_consumption","renewables_consumption","primary_energy_consumption"],axis=1).sum(axis=1).to_frame()
         tempdf2 = self.data[self.data.index.year == year][["country", "gdp", "population"]]
-        tempdf3= pd.concat([test1, tempdf2], axis=1)
+        tempdf3= pd.concat([tempdf1, tempdf2], axis=1)
         tempdf3 = tempdf3.dropna(how="any")
         tempdf3 = tempdf3[tempdf3["country"] != "World"]
         gap = tempdf3.set_axis(["energy","country", "gdp", "population"], axis = 1)

@@ -164,19 +164,13 @@ class EnergyClass:
             self.download()
         #create new dataframe made of three columns: "country", and "gdp"
         gdp_df = self.data[["country", "gdp"]]
-        figure, axis = plt.subplots() # pylint: disable=unused-variable
-        temp = []
-        flag = 0
         for country in countries:
             if country not in gdp_df["country"].tolist():
                 raise ValueError(f"Country {country} not on the list of countries")
-            temp.append(gdp_df[gdp_df["country"] == country])
-            #temp = gdp_DF[gdp_DF["country"] == country]
-        if flag == 0:
-            for element in temp:
-                element.plot(ax = axis, x = temp.index, y = "gdp", label = country
-                         ,title = "GDP of the years")
-            #plt.show()
+            element = gdp_df[gdp_df["country"] == country]
+            plt.plot(element.index.year,element["gdp"], label = country)
+        plt.title("GDP over the years")
+        plt.legend()
     #METHOD 6
     def gapminder(self, year: int):
         '''

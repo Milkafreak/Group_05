@@ -8,6 +8,7 @@ sys.path.append("./Methods")
 plt.style.use('seaborn')
 #pylint: disable=wrong-import-position
 from download import download_file #pylint: disable=wrong-import-position
+from emission import add_emission #pylint: disable=wrong-import-position
 
 #testcomments
 class EnergyClass:
@@ -44,8 +45,12 @@ class EnergyClass:
         '''
         self.data = pd.read_csv("./Download/Energy.csv")
         self.data = self.data[self.data["year"]>= 1970]
+
         self.data["year"] = pd.to_datetime(self.data["year"],format = "%Y")
         self.data = self.data.set_index("year")
+
+        add_emission(self.data)
+
         self.file = True
     def country_list(self):
         '''
@@ -100,6 +105,7 @@ class EnergyClass:
         '''
         Takes a list of countries and iterates over it to find the\
         respective value in the dataset for the total energy consumed\
+        and level of CO2 emit
 
         Appends each country element to loca : list
         Appends each value of that country's consumption to val : list
@@ -116,34 +122,44 @@ class EnergyClass:
         ---------------
         figure: BarContainer
             compare the total consumption of each country
+                Dashed line
+            compare the total CO2 emit
         '''
         if self.file is False:
             self.download()
         #get the df of the consumption columns
         df_consumption = self.data.filter(like = "_consumption")
-        df_country = self.data[["country"]]#get the df of the country column
+        df_country = self.data[["country","emissions"]]#get the df of the country column
         #merge the two dfs into 'df' having the columns of country and all the consumptions
         df_countries = pd.concat([df_country, df_consumption], axis=1)
         #group by countries and compute the averge of each consumption over the years
         #'new_df' having index label as country and counsumptions columns
         new_df = df_countries.groupby("country").mean()
         #compute the sum of all consumptions into TOTAL
-        new_df["TOTAL_energy_consumption"] = new_df.iloc[:,:].sum(axis = 1)
-        final_df = new_df[["TOTAL_energy_consumption"]]
+        new_df["TOTAL_energy_consumption"] = new_df.iloc[:,1:].sum(axis = 1)
+        final_df = new_df[["TOTAL_energy_consumption", "emissions"]]
         f_df = final_df.reset_index()
         loca = []
         val = []
+        emis = []
         for country in countries:
             if country not in f_df["country"].tolist():
                 raise ValueError(f"Country {country} not on the list of countries")
             value = f_df[f_df["country"] == country]["TOTAL_energy_consumption"].values[0]
+            value_emis = f_df[f_df["country"] == country]["emissions"].values[0]
             loca.append(country)
             val.append(value)
-        fig = plt.figure(figsize = (10, 5)) # pylint: disable=unused-variable
-        plt.bar(loca, val, color ='purple', width = 0.8)
-        plt.xlabel("Countries")
-        plt.ylabel("Energy Consumption")
-        plt.title("Total Energy consumption per Country")
+            emis.append(value_emis)
+        df_plot = pd.DataFrame({'Energy': val, 'Emission': emis, "Country": loca},\
+        columns=['Energy','Emission','Country'])
+        fig, ax1 = plt.subplots()
+        ax1.set_xlabel("Countries")
+        ax1.bar(df_plot["Country"], df_plot["Energy"], color="blue")
+        ax1.tick_params(axis='y', labelcolor="blue")
+        ax2 = ax1.twinx()
+        ax2.plot(df_plot["Country"], df_plot["Emission"], color="red", linestyle='dashed')
+        ax2.tick_params(axis='y', labelcolor="red")
+        plt.grid(False)
         plt.show()
         #METHOD 5
     def gdp_compare(self, countries: list):

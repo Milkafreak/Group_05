@@ -1,5 +1,6 @@
 #pylint: disable=wrong-import-position
 # pylint: disable=no-member
+from datetime import datetime
 import sys
 import matplotlib.pyplot as plt # type: ignore
 import pandas as pd # type: ignore
@@ -161,8 +162,8 @@ class EnergyClass:
         '''
         if self.file is False:
             self.download()
-        #create new dataframe made of three columns: "country", "year", and "gdp"
-        gdp_df = self.data[["country", "year", "gdp"]]
+        #create new dataframe made of three columns: "country", and "gdp"
+        gdp_df = self.data[["country", "gdp"]]
         figure, axis = plt.subplots() # pylint: disable=unused-variable
         temp = []
         flag = 0
@@ -173,7 +174,7 @@ class EnergyClass:
             #temp = gdp_DF[gdp_DF["country"] == country]
         if flag == 0:
             for element in temp:
-                element.plot(ax = axis, x = "year", y = "gdp", label = country
+                element.plot(ax = axis, x = temp.index, y = "gdp", label = country
                          ,title = "GDP of the years")
             #plt.show()
     #METHOD 6
@@ -195,15 +196,16 @@ class EnergyClass:
         '''
         if self.file is False:
             self.download()
-        #'edf' having one column representing the sum of all consumptions per country per year
-        edf = self.data.filter(like = "_consumption").sum(axis = 1).to_frame()
-        rdf = self.data[["country", "year", "gdp", "population"]]
-        gapminder_df = pd.merge(rdf, edf, left_index = True, right_index = True)
+        #'tempdf1' having one column representing the sum of all consumptions per country per year with redudant columns removed
         if type(year) not in [int]:
             raise TypeError("variable 'Year' is not an int")
-        gap = gapminder_df.groupby("year").get_group(year)
-        gap = gap.set_axis(["country", "year", "gdp", "population", "energy"], axis = 1)
-        gap = gap[gap["country"] != "World"]
+        tempdf1 = df[df.index.year==year].filter(like="_consumption").drop(["fossil_fuel_consumption","low_carbon_consumption","renewables_consumption","primary_energy_consumption"],axis=1).sum(axis=1).to_frame()
+        tempdf2 = df[df.index.year == year][["country", "gdp", "population"]]
+        tempdf3 = pd.merge(tempdf1, tempdf2, left_index = True, right_index = True)
+        tempdf3= pd.concat([test1, tempdf2], axis=1)
+        tempdf3 = tempdf3.dropna(how="any")
+        tempdf3 = tempdf3[tempdf3["country"] != "World"]
+        gap = tempdf3.set_axis(["energy","country", "gdp", "population"], axis = 1)
         gap["population"] = (gap["population"]/1000000).round(2)
         plt.scatter(gap["gdp"],gap["energy"], s=gap["population"], alpha = 0.8)
         plt.xlabel("GDP of countries")

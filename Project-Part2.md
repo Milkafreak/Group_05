@@ -21,8 +21,8 @@ Day two is beginning.
 
 ### Day 2, Phase 1: Extending the scope
 
-- [ ] Convert your code so that the year of the read dataframe is the __index__ and is in __datetime__ format.
-- [ ] Make sure you are not using aggregated "\_consumption" columns. It makes no sense in using "renewables_consumption" if you are already using "solar_consumption", for example. You did not notice this on day one (well, if you did, the real group, not the group from the scenario hackathon, congratulatios. Data Science is also about detail). Check [the data dictionary of the dataset](https://github.com/owid/energy-data/blob/master/owid-energy-codebook.csv) and make sure you are not using repeated columns.
+- [Done - Edwin] Convert your code so that the year of the read dataframe is the __index__ and is in __datetime__ format.
+- [Done - Edwin Make sure you are not using aggregated "\_consumption" columns. It makes no sense in using "renewables_consumption" if you are already using "solar_consumption", for example. You did not notice this on day one (well, if you did, the real group, not the group from the scenario hackathon, congratulatios. Data Science is also about detail). Check [the data dictionary of the dataset](https://github.com/owid/energy-data/blob/master/owid-energy-codebook.csv) and make sure you are not using repeated columns.
 
 
 <div class="alert alert-info"> 

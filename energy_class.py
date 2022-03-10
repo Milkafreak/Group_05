@@ -43,6 +43,8 @@ class EnergyClass:
         '''
         self.data = pd.read_csv("./Download/Energy.csv")
         self.data = self.data[self.data["year"]>= 1970]
+        self.data["year"] = pd.to_datetime(self.data["year"],format = "%Y")
+        self.data = self.data.set_index("year")
         self.file = True
     def country_list(self):
         '''
@@ -81,20 +83,16 @@ class EnergyClass:
         if normalize is False:
             df2 = self.data[ self.data["country"] == country][self.data.columns[
                 self.data.columns.str.contains( "_consumption|country|year" )]]
+            df2 = df2.drop(["fossil_fuel_consumption","low_carbon_consumption","renewables_consumption","primary_energy_consumption"],axis=1)
         else: #Normalize Data
             values = self.data[self.data["country"] == country][
                 self.data.columns[self.data.columns.str.contains("_consumption")]]
             values = values.fillna(0)
             x_scaled = values.div(values.sum(axis=1), axis=0).reset_index(drop=True)
             df2 = pd.DataFrame(x_scaled,columns=values.columns)
-            df2["year"] = self.data[self.data["country"] == country][
-                self.data.columns[
-                    self.data.columns.str.contains("_consumption|year|country")]
-            ]["year"].reset_index(drop=True)
-            df2["country"] = self.data[self.data["country"] == country][
-                self.data.columns[
-                    self.data.columns.str.contains("_consumption|year|country")]
-            ]["country"].reset_index(drop=True)
+            df2["year"] = self.data[self.data["country"] == country][self.data.columns[self.data.columns.str.contains("_consumption|year|country")]]["year"].reset_index(drop=True)
+            df2["country"] = self.data[self.data["country"] == country][self.data.columns[self.data.columns.str.contains("_consumption|year|country")]]["country"].reset_index(drop=True)
+            df2 = df2.drop(["fossil_fuel_consumption","low_carbon_consumption","renewables_consumption","primary_energy_consumption"],axis=1)
         #Plot all consumption
         liste = []
         for col in df2.columns:

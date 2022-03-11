@@ -235,4 +235,64 @@ class EnergyClass:
         plt.xscale("log")
         plt.yscale("log")
         plt.show()
+    #Method 7
+    def emissions_consumption(self, year1: int = 2000, year2: int = 2018 ):
+        '''
+        Takes two years as an interval of data related to energy consumption and emession \
+        and output a scatter plot between emessions and total energy consumption \
+        with size of the dots and colors reflecting countries´s populations.
+
+        Parameters
+        ---------------
+        year1: str
+               Begining year
+        year2: str
+               Ending year
+
+        Output
+        ---------------
+        figure: Scatter plot
+            of emissions and total energy consumption\
+            size and color of dots reflect countries´s average\
+            population during the chosen period.
+        '''
+        if year1 not in self.data["year"].tolist():
+            raise ValueError(f"year {year1} not on the list of years")
+        if year2 not in self.data["year"].tolist():
+            raise ValueError(f"year {year2} not on the list of years")
+        if year1 >= year2:
+            raise ValueError(f" first year: {year1} \
+            should be stricly less than second year: {year2}")
+        data = self.data[(self.data["year"]>= year1) & (self.data["year"]<= year2)]
+        df_consumption = data.filter(like = "_consumption")
+        df_country = data[["country","emissions"]]#get the df of the country column
+        df_countries = pd.merge(df_country, df_consumption, left_index = True, right_index = True)
+        new_df = df_countries.groupby("country").mean()
+        #compute the sum of all consumptions into TOTAL
+        new_df["TOTAL_energy_consumption"] = new_df.iloc[:,1:].sum(axis = 1)
+        final_df = new_df[["TOTAL_energy_consumption", "emissions"]]
+        f_df = final_df.reset_index()
+        df_population = data[["country","population"]]#get the df of the country column
+        df_population = df_population.groupby("country").mean()
+        df_population = df_population.reset_index()
+        df_scatter = pd.merge(df_population, f_df, left_index = True, right_index = True)
+        df_scatter.drop( df_scatter[ df_scatter['country_x'] == "World" ].index , inplace=True)
+        fig = plt.figure(figsize=(18, 10))
+        #plt_1 = plt.figure(figsize=(18, 10))
+        ax = plt.gca()
+        cm = plt.cm.get_cmap('RdYlBu')
+
+        scatter = ax.scatter(df_scatter["emissions"], df_scatter["TOTAL_energy_consumption"] \
+                             , s= df_scatter["population"]/1000000 \
+                             ,c=df_scatter["population"]/1000000 ,vmin=0 \
+                             , vmax=200, alpha=0.5 , cmap=cm)
+        plt.colorbar(scatter)
+        ax.set_yscale('log')
+        ax.set_xscale('log')
+        plt.title(f"Emissions and consumption for all countries between {year1} and {year2}" \
+                  , fontdict=None, loc='center')
+        plt.xlabel("Emissions of gC02eq/kWh")
+        plt.ylabel("Total energy consumption")
+        handles, labels = scatter.legend_elements(prop="sizes", alpha=0.4)
+        legend2 = ax.legend(handles, labels, loc="lower right", title="Sizes")
         

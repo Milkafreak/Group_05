@@ -9,19 +9,20 @@
 # If extensions (or modules to document with autodoc) are in another directory,
 # add these directories to sys.path here. If the directory is relative to the
 # documentation root, use os.path.abspath to make it absolute, like shown here.
+#
 import os
 import sys
-sys.path.insert(0, os.path.abspath('..\Methods'))
+sys.path.insert(0, os.path.abspath('../Methods/'))
 
 
 # -- Project information -----------------------------------------------------
 
-project = 'Group05_AdPro_Project'
-copyright = '2022, B. El Ahrach, E. Gall, L.Chakchouk, T. Potsa'
-author = 'B. El Ahrach, E. Gall, L.Chakchouk, T. Potsa'
+project = 'Group_05 AdPro Project'
+copyright = '2022, B. El Ahrach, E. Gall, L. Chakchouk, T. Pótsa'
+author = 'B. El Ahrach, E. Gall, L. Chakchouk, T. Pótsa'
 
 # The full version, including alpha/beta/rc tags
-release = '0.1'
+release = '1.0'
 
 
 # -- General configuration ---------------------------------------------------

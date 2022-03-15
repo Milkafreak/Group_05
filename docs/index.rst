@@ -1,16 +1,16 @@
-.. Group05_AdPro_Project documentation master file, created by
-   sphinx-quickstart on Sun Mar 13 00:27:36 2022.
+.. Group_05 AdPro Project documentation master file, created by
+   sphinx-quickstart on Tue Mar 15 17:20:50 2022.
    You can adapt this file completely to your liking, but it should at least
    contain the root `toctree` directive.
 
-Welcome to Group05_AdPro_Project's documentation!
-=================================================
+Welcome to Group_05 AdPro Project's documentation!
+==================================================
 
 .. toctree::
    :maxdepth: 2
    :caption: Contents:
-
-    modules
+   
+   modules
 
 Indices and tables
 ==================

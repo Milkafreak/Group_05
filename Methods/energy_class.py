@@ -2,19 +2,21 @@
 # pylint: disable=no-member
 from datetime import datetime
 import sys
+import itertools
+import warnings
 import matplotlib.pyplot as plt # type: ignore
 import pandas as pd # type: ignore
+from statsmodels.tsa.arima.model import ARIMA
+from sklearn.metrics import mean_squared_error
+import numpy as np
+import statsmodels.api as sm
 sys.path.append("./Methods")
 plt.style.use('seaborn')
 #pylint: disable=wrong-import-position
 from download import download_file #pylint: disable=wrong-import-position
 from emission import add_emission #pylint: disable=wrong-import-position
-import itertools
-import warnings
-import numpy as np
-import statsmodels.api as sm
-from statsmodels.tsa.arima.model import ARIMA
-from sklearn.metrics import mean_squared_error
+
+
 
 
 #testcomments
@@ -293,21 +295,21 @@ class EnergyClass:
         self.data = self.data.set_index("year")
     def arima_prediction(self, country: str, n_periods: int):
         '''
-        Takes a country identifier and a number of periods for future predictions. 
-        Uses the ARIMA algorithm for prediction. The hyperparameters are chosen based on iteration of\
-        all the combinations within their given range and finding the tuple that yields the smallest rmse.
-        Fits the data and predicts the outcome of both emissions and consumptions for the given country over\
-        the given number of periods.
-        DISCLAIMER: Itertools used instead of Auto-Arima because the "p_start" parameter can´t be set correctly
-        plots the two graphs of ARIMA prediction for emission and consumption stacked horizentally together.
+        Takes a country identifier and a number of periods for future predictions.
+        Uses the ARIMA algorithm for prediction. The hyperparameters are chosen \
+        based on iteration ofall the combinations within their given range and \
+        finding the tuple that yields the smallest rmse.
+        Fits the data and predicts the outcome of both emissions and consumptions \
+        for the given country over the given number of periods.
+        DISCLAIMER: Itertools used instead of Auto-Arima because the "p_start"\
+        parameter can´t be set correctly plots the two graphs of ARIMA prediction\
+        for emission and consumption stacked horizentally together.
         Parameters
         ---------------
         country: string
                 name of the country to do the ARIMA prediction on
-        
         n_periods: integer
                 number of periods to predict
-        
         ---------------
         Figure: subplots one for the emission prediction and th eother for consumption prediction
         '''
@@ -317,11 +319,12 @@ class EnergyClass:
             raise Exception("Sorry, prediction periods must be an integer and bigger or equal to 1")
         warnings.filterwarnings("ignore")
         df_em = self.data[self.data["country"] == country]
-        df_cons = self.data[self.data["country"] == country].filter(like = "_consumption").drop([ "fossil_fuel_consumption","low_carbon_consumption", "primary_energy_consumption", "renewables_consumption"],axis=1).dropna()\
-        .sum(axis = 1).to_frame().set_axis(["all_consumptions"], axis = 1)
-        if (df_em["emissions"].isna().sum()>35):
+        df_cons = self.data[self.data["country"] == country].filter(like = "_consumption" ).drop([ \
+        "fossil_fuel_consumption","low_carbon_consumption" , "primary_energy_consumption" \
+        , "renewables_consumption" ],axis=1).dropna().sum(axis = 1).to_frame().set_axis([ \
+        "all_consumptions"], axis = 1)
+        if df_em["emissions"].isna().sum()>35:
             raise Exception(f"Sorry, {country} does not have enough emission data to perform ARIMA")
-            return
         df_em = df_em.filter(like = "em").dropna()
         train = df_em["emissions"][:int(len(df_em["emissions"])*0.8)]
         test = df_em["emissions"][int(len(df_em["emissions"])*0.8):]
@@ -332,20 +335,21 @@ class EnergyClass:
         for pdq in pdq_comb:
             try:
                 model = sm.tsa.arima.ARIMA(train, order = pdq).fit()
-                pred = model.predict(start = int(len(df_em["emissions"])*0.8),end = (len(df_em["emissions"])-1))
+                pred = model.predict(start = int(len(df_em["emissions"\
+                ])*0.8),end = (len(df_em["emissions"])-1))
                 error = np.sqrt(mean_squared_error(test, pred))
                 order.append(pdq)
                 rmse.append(error)
             except:
-                continue 
+                continue
         results = pd.DataFrame(index = order, data=rmse, columns = ["RMSE"])
         hyperparameters = results.nsmallest(1, "RMSE").index[0]
         #print(hyperparameters)
         final_model = sm.tsa.arima.ARIMA(df_em["emissions"], order = (1,1,1)).fit()
-        prediction = final_model.predict(len(df_em), len(df_em)+n_periods)    
+        prediction = final_model.predict(len(df_em), len(df_em)+n_periods)
         final_model2 = sm.tsa.arima.ARIMA(df_cons["all_consumptions"], order = (1, 1, 1)).fit()
         prediction2 = final_model2.predict(len(df_cons), len(df_cons)+n_periods)
-        f, (ax1, ax2) = plt.subplots(1, 2)  
+        f, (ax1, ax2) = plt.subplots(1, 2)
         ax1.plot(df_em, color = "cornflowerblue")
         ax1.plot(prediction, label="predictions", color = "yellowgreen")
         ax1.set_title("ARIMA Emissions Prediction")
@@ -353,3 +357,4 @@ class EnergyClass:
         ax2.plot(prediction2, label="predictions", color = "red")
         ax2.set_title("ARIMA Consumptions Prediction")
         plt.tight_layout(4)
+        

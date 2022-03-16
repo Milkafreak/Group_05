@@ -318,7 +318,8 @@ class EnergyClass:
         warnings.filterwarnings("ignore")
         df_em = self.data[self.data["country"] == country]
         df_cons = self.data[self.data["country"] == country].filter(like = "_consumption").drop([ "fossil_fuel_consumption","low_carbon_consumption" , \
-                "primary_energy_consumption" ],axis=1)\.dropna()\
+                "primary_energy_consumption" ],axis=1)\
+                .dropna()\
                 .sum(axis = 1).to_frame().set_axis(["all_consumptions"], axis = 1)
         if (df_em["emissions"].isna().sum()>35):
             raise Exception(f"Sorry, {country} does not have enough emission data to perform ARIMA")

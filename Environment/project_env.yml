@@ -1,10 +1,12 @@
 name: project
 channels:
+  - anaconda
   - jmcmurray
   - trentonoliphant
   - conda-forge
   - defaults
 dependencies:
+  - alabaster=0.7.12
   - anyio=3.5.0
   - argon2-cffi=21.3.0
   - argon2-cffi-bindings=21.2.0
@@ -21,7 +23,7 @@ dependencies:
   - brotli-bin=1.0.9
   - brotlipy=0.7.0
   - bzip2=1.0.8
-  - ca-certificates=2021.10.8
+  - ca-certificates=2020.10.14
   - certifi=2021.10.8
   - cffi=1.15.0
   - charset-normalizer=2.0.12
@@ -32,6 +34,7 @@ dependencies:
   - debugpy=1.5.1
   - decorator=5.1.1
   - defusedxml=0.7.1
+  - docutils=0.15.2
   - entrypoints=0.4
   - execnet=1.9.0
   - executing=0.8.3
@@ -40,6 +43,7 @@ dependencies:
   - freetype=2.10.4
   - icu=68.2
   - idna=3.3
+  - imagesize=1.3.0
   - importlib-metadata=4.11.2
   - importlib_resources=5.4.0
   - iniconfig=1.1.1
@@ -50,6 +54,7 @@ dependencies:
   - jbig=2.1
   - jedi=0.18.1
   - jinja2=3.0.3
+  - joblib=0.17.0
   - jpeg=9e
   - json5=0.9.5
   - jsonschema=4.4.0
@@ -84,6 +89,7 @@ dependencies:
   - m2w64-gcc-libs-core=5.3.0
   - m2w64-gmp=6.1.0
   - m2w64-libwinpthread-git=5.0.0.4634.697f757
+  - make=4.3
   - markupsafe=2.1.0
   - matplotlib=3.5.1
   - matplotlib-base=3.5.1
@@ -91,6 +97,7 @@ dependencies:
   - mistune=0.8.4
   - mkl=2022.0.0
   - mock=4.0.3
+  - more-itertools=8.5.0
   - msys2-conda-epoch=20160418
   - munkres=1.1.4
   - nbclassic=0.3.6
@@ -111,6 +118,7 @@ dependencies:
   - parso=0.8.3
   - path=16.4.0
   - path.py=12.5.0
+  - patsy=0.5.2
   - pickleshare=0.7.5
   - pillow=9.0.1
   - pip=22.0.4
@@ -143,17 +151,30 @@ dependencies:
   - qt=5.12.9
   - qutil=3.2.1
   - requests=2.27.1
+  - scikit-learn=1.0.2
+  - scipy=1.8.0
   - send2trash=1.8.0
   - setuptools=60.9.3
   - six=1.16.0
   - sniffio=1.2.0
+  - snowballstemmer=2.2.0
   - soupsieve=2.3.1
+  - sphinx=4.4.0
+  - sphinx_rtd_theme=1.0.0
+  - sphinxcontrib-applehelp=1.0.2
+  - sphinxcontrib-devhelp=1.0.2
+  - sphinxcontrib-htmlhelp=2.0.0
+  - sphinxcontrib-jsmath=1.0.1
+  - sphinxcontrib-qthelp=1.0.3
+  - sphinxcontrib-serializinghtml=1.1.5
   - sqlite=3.37.0
   - stack_data=0.2.0
+  - statsmodels=0.13.2
   - tbb=2021.5.0
   - termcolor=1.1.0
   - terminado=0.13.3
   - testpath=0.6.0
+  - threadpoolctl=2.1.0
   - tk=8.6.12
   - tomli=2.0.1
   - tornado=6.1

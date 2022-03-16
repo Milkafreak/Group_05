@@ -251,9 +251,9 @@ class EnergyClass:
         data = self.data
         data.reset_index(inplace=True)
         data = data.rename(columns = {'index':'year'})
-        if str(year1) not in data['year'].dt.strftime('%Y').tolist():
+        if str(year1) not in data["year"].dt.strftime('%Y').tolist():
             raise ValueError(f"year {year1} not on the list of years")
-        if str(year2) not in data['year'].dt.strftime('%Y').tolist():
+        if str(year2) not in data["year"].dt.strftime('%Y').tolist():
             raise ValueError(f"year {year2} not on the list of years")
         if year1 >= year2:
             raise ValueError(f" first year: {year1} \
@@ -290,6 +290,7 @@ class EnergyClass:
         plt.ylabel("Total energy consumption")
         handles, labels = scatter.legend_elements(prop="sizes", alpha=0.4)
         legend2 = ax.legend(handles, labels, loc="lower right", title="Sizes")
+        self.data = self.data.set_index("year")
     def arima_prediction(self, country: str, n_periods: int):
         '''
         Takes a country identifier and a number of periods for future predictions. 
@@ -297,6 +298,7 @@ class EnergyClass:
         all the combinations within their given range and finding the tuple that yields the smallest rmse.
         Fits the data and predicts the outcome of both emissions and consumptions for the given country over\
         the given number of periods.
+        DISCLAIMER: Itertools used instead of Auto-Arima because the "p_start" parameter can´t be set correctly
         plots the two graphs of ARIMA prediction for emission and consumption stacked horizentally together.
         Parameters
         ---------------
@@ -323,7 +325,7 @@ class EnergyClass:
         df_em = df_em.filter(like = "em").dropna()
         train = df_em["emissions"][:int(len(df_em["emissions"])*0.8)]
         test = df_em["emissions"][int(len(df_em["emissions"])*0.8):]
-        p, d, q = range(0,7), range(0,2), range(0,7)
+        p, d, q = range(1,5), range(1,2), range(1,5)
         pdq_comb = list(itertools.product(p, d, q))
         rmse = []
         order = []

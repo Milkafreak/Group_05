@@ -1,20 +1,21 @@
 #pylint: disable=wrong-import-position
 # pylint: disable=no-member
 from datetime import datetime
-import itertools
 import sys
-import warnings
 import matplotlib.pyplot as plt # type: ignore
 import pandas as pd # type: ignore
-import statsmodels.api as sm
-from statsmodels.tsa.arima_model import ARIMA
-from sklearn.metrics import mean_squared_error
-import numpy as np
 sys.path.append("./Methods")
 plt.style.use('seaborn')
 #pylint: disable=wrong-import-position
 from download import download_file #pylint: disable=wrong-import-position
 from emission import add_emission #pylint: disable=wrong-import-position
+import itertools
+import warnings
+import numpy as np
+import statsmodels.api as sm
+from statsmodels.tsa.arima.model import ARIMA
+from sklearn.metrics import mean_squared_error
+
 
 #testcomments
 class EnergyClass:
@@ -212,8 +213,8 @@ class EnergyClass:
         # if type(year) not in [int]:
             # raise TypeError("variable 'Year' is not an int")
         tempdf1 = self.data[self.data.index.year == year].filter( like= "_consumption" )\
-        .drop([ "fossil_fuel_consumption","low_carbon_consumption" , \
-               "renewables_consumption" , "primary_energy_consumption" ],axis=1)\
+        .drop([\
+               "renewables_consumption"],axis=1)\
         .sum(axis=1).to_frame()
         tempdf2 = self.data[self.data.index.year == year][["country", "gdp", "population"]]
         tempdf3= pd.concat([tempdf1, tempdf2], axis=1)
@@ -259,8 +260,7 @@ class EnergyClass:
             should be stricly less than second year: {year2}")
         data = data[(data["year"].dt.strftime('%Y').astype(int) >= year1) \
                     & (data["year"].dt.strftime('%Y').astype(int)<= year2)]
-        df_consumption = data.filter(like = "_consumption").drop([ "fossil_fuel_consumption","low_carbon_consumption" , \
-               "renewables_consumption" , "primary_energy_consumption" ],axis=1)    
+        df_consumption = data.filter(like = "_consumption")
         df_country = data[["country","emissions"]]#get the df of the country column
         df_countries = pd.merge(df_country, df_consumption, left_index = True, right_index = True)
         new_df = df_countries.groupby("country").mean()
@@ -290,8 +290,6 @@ class EnergyClass:
         plt.ylabel("Total energy consumption")
         handles, labels = scatter.legend_elements(prop="sizes", alpha=0.4)
         legend2 = ax.legend(handles, labels, loc="lower right", title="Sizes")
-    
-    #METHOD 8
     def arima_prediction(self, country: str, n_periods: int):
         '''
         Takes a country identifier and a number of periods for future predictions. 
@@ -317,10 +315,8 @@ class EnergyClass:
             raise Exception("Sorry, prediction periods must be an integer and bigger or equal to 1")
         warnings.filterwarnings("ignore")
         df_em = self.data[self.data["country"] == country]
-        df_cons = self.data[self.data["country"] == country].filter(like = "_consumption").drop([ "fossil_fuel_consumption","low_carbon_consumption" , \
-                "primary_energy_consumption" ],axis=1)\
-                .dropna()\
-                .sum(axis = 1).to_frame().set_axis(["all_consumptions"], axis = 1)
+        df_cons = self.data[self.data["country"] == country].filter(like = "_consumption").drop([ "fossil_fuel_consumption","low_carbon_consumption", "primary_energy_consumption", "renewables_consumption"],axis=1).dropna()\
+        .sum(axis = 1).to_frame().set_axis(["all_consumptions"], axis = 1)
         if (df_em["emissions"].isna().sum()>35):
             raise Exception(f"Sorry, {country} does not have enough emission data to perform ARIMA")
             return
@@ -342,9 +338,10 @@ class EnergyClass:
                 continue 
         results = pd.DataFrame(index = order, data=rmse, columns = ["RMSE"])
         hyperparameters = results.nsmallest(1, "RMSE").index[0]
-        final_model = sm.tsa.arima.ARIMA(df_em["emissions"], order = hyperparameters).fit()
+        #print(hyperparameters)
+        final_model = sm.tsa.arima.ARIMA(df_em["emissions"], order = (1,1,1)).fit()
         prediction = final_model.predict(len(df_em), len(df_em)+n_periods)    
-        final_model2 = sm.tsa.arima.ARIMA(df_cons["all_consumptions"], order = hyperparameters).fit()
+        final_model2 = sm.tsa.arima.ARIMA(df_cons["all_consumptions"], order = (1, 1, 1)).fit()
         prediction2 = final_model2.predict(len(df_cons), len(df_cons)+n_periods)
         f, (ax1, ax2) = plt.subplots(1, 2)  
         ax1.plot(df_em, color = "cornflowerblue")

@@ -1,5 +1,6 @@
 #pylint: disable=wrong-import-position
 # pylint: disable=no-member
+from datetime import datetime
 import sys
 import matplotlib.pyplot as plt # type: ignore
 import pandas as pd # type: ignore
@@ -8,7 +9,15 @@ plt.style.use('seaborn')
 #pylint: disable=wrong-import-position
 from download import download_file #pylint: disable=wrong-import-position
 from emission import add_emission #pylint: disable=wrong-import-position
+import itertools
+import warnings
+import numpy as np
+import statsmodels.api as sm
+from statsmodels.tsa.arima.model import ARIMA
+from sklearn.metrics import mean_squared_error
 
+
+#testcomments
 class EnergyClass:
     '''
     class that contain different methods that works
@@ -43,6 +52,8 @@ class EnergyClass:
         '''
         self.data = pd.read_csv("./Download/Energy.csv")
         self.data = self.data[self.data["year"]>= 1970]
+        self.data["year"] = pd.to_datetime(self.data["year"],format = "%Y")
+        self.data = self.data.set_index("year")
         add_emission(self.data)
         self.file = True
     def country_list(self):
@@ -61,7 +72,7 @@ class EnergyClass:
         if self.file is False:
             self.download()
         return self.data["country"].unique()
-    def plot_consumption(self,country: str,normalize: bool):
+    def plot_consumption(self,country: str,normalize: bool = "False"):
         '''
         Plot the consumption of the desired country in terms of different energy sources
         Parameters
@@ -69,10 +80,10 @@ class EnergyClass:
         country: str
         Returns
         ---------
-        plot
+        Area plot
         Example
         ---------
-        x.plot_consumptiont("Portugal")
+        x.plot_consumptiont("Portugal",normalize =True)
         with x being an EnergyClass object.
         '''
         if self.file is False:
@@ -80,50 +91,35 @@ class EnergyClass:
         if country not in self.data["country"].unique():
             raise ValueError("Variable is not part of the countries in the dataframe.")
         if normalize is False:
-            df2 = self.data[ self.data["country"] == country][self.data.columns[
-                self.data.columns.str.contains( "_consumption|country|year" )]]
+            df2 = self.data[ self.data["country"] == country]\
+            [self.data.columns[self.data.columns.str.contains( "_consumption|country|year" )]]
+            df2 = df2.drop(["fossil_fuel_consumption","low_carbon_consumption",\
+                            "renewables_consumption","primary_energy_consumption"],axis=1)
         else: #Normalize Data
-            values = self.data[self.data["country"] == country][
-                self.data.columns[self.data.columns.str.contains("_consumption")]]
+            values = self.data[self.data["country"] == country]\
+            [self.data.columns[self.data.columns.str.contains("_consumption")]]
+            values = values.drop(["fossil_fuel_consumption","low_carbon_consumption",\
+                                  "renewables_consumption","primary_energy_consumption"],axis=1)
             values = values.fillna(0)
             x_scaled = values.div(values.sum(axis=1), axis=0).reset_index(drop=True)
-            df2 = pd.DataFrame(x_scaled,columns=values.columns)
-            df2["year"] = self.data[self.data["country"] == country][
-                self.data.columns[
-                    self.data.columns.str.contains("_consumption|year|country")]
-            ]["year"].reset_index(drop=True)
-            df2["country"] = self.data[self.data["country"] == country][
-                self.data.columns[
-                    self.data.columns.str.contains("_consumption|year|country")]
-            ]["country"].reset_index(drop=True)
+            x_scaled.index = self.data[self.data["country"] == country]\
+            [self.data.columns[self.data.columns.str.contains("_consumption|country")]].index
+            df2 = x_scaled
         #Plot all consumption
-        liste = []
-        for col in df2.columns:
-            liste.append(col)
-        liste.remove("year")
-        liste.remove("country")
-        col = df2["year"]
-        for inp in liste:
-            i = df2[inp]
-            plt.plot(col,i,label = inp)
-            plt.legend()
+        df2.plot.area()
     def energy_compare(self, countries: list):
         '''
         Takes a list of countries and iterates over it to find the\
         respective value in the dataset for the total energy consumed\
         and level of CO2 emit
-
         Appends each country element to loca : list
         Appends each value of that country's consumption to val : list
-
         Plot a barchart of each country in the list and their\
         energy consumption for the sake of comparison
-
         Parameters
         ---------------
         countries: list
             list of country strings
-
         Output
         ---------------
         figure: BarContainer
@@ -137,7 +133,7 @@ class EnergyClass:
         df_consumption = self.data.filter(like = "_consumption")
         df_country = self.data[["country","emissions"]]#get the df of the country column
         #merge the two dfs into 'df' having the columns of country and all the consumptions
-        df_countries = pd.merge(df_country, df_consumption, left_index = True, right_index = True)
+        df_countries = pd.concat([df_country, df_consumption], axis=1)
         #group by countries and compute the averge of each consumption over the years
         #'new_df' having index label as country and counsumptions columns
         new_df = df_countries.groupby("country").mean()
@@ -184,21 +180,15 @@ class EnergyClass:
         '''
         if self.file is False:
             self.download()
-        #create new dataframe made of three columns: "country", "year", and "gdp"
-        gdp_df = self.data[["country", "year", "gdp"]]
-        figure, axis = plt.subplots() # pylint: disable=unused-variable
-        temp = []
-        flag = 0
+        #create new dataframe made of three columns: "country", and "gdp"
+        gdp_df = self.data[["country", "gdp"]]
         for country in countries:
             if country not in gdp_df["country"].tolist():
                 raise ValueError(f"Country {country} not on the list of countries")
-            temp.append(gdp_df[gdp_df["country"] == country])
-            #temp = gdp_DF[gdp_DF["country"] == country]
-        if flag == 0:
-            for element in temp:
-                element.plot(ax = axis, x = "year", y = "gdp", label = country
-                         ,title = "GDP of the years")
-            #plt.show()
+            element = gdp_df[gdp_df["country"] == country]
+            plt.plot(element.index.year,element["gdp"], label = country)
+        plt.title("GDP over the years")
+        plt.legend()
     #METHOD 6
     def gapminder(self, year: int):
         '''
@@ -218,15 +208,19 @@ class EnergyClass:
         '''
         if self.file is False:
             self.download()
-        #'edf' having one column representing the sum of all consumptions per country per year
-        edf = self.data.filter(like = "_consumption").sum(axis = 1).to_frame()
-        rdf = self.data[["country", "year", "gdp", "population"]]
-        gapminder_df = pd.merge(rdf, edf, left_index = True, right_index = True)
-        if type(year) not in [int]:
-            raise TypeError("variable 'Year' is not an int")
-        gap = gapminder_df.groupby("year").get_group(year)
-        gap = gap.set_axis(["country", "year", "gdp", "population", "energy"], axis = 1)
-        gap = gap[gap["country"] != "World"]
+        #'tempdf1' having one column representing the sum of \
+        #all consumptions per country per year with redudant columns removed
+        # if type(year) not in [int]:
+            # raise TypeError("variable 'Year' is not an int")
+        tempdf1 = self.data[self.data.index.year == year].filter( like= "_consumption" )\
+        .drop([\
+               "renewables_consumption"],axis=1)\
+        .sum(axis=1).to_frame()
+        tempdf2 = self.data[self.data.index.year == year][["country", "gdp", "population"]]
+        tempdf3= pd.concat([tempdf1, tempdf2], axis=1)
+        tempdf3 = tempdf3.dropna(how="any")
+        tempdf3 = tempdf3[tempdf3["country"] != "World"]
+        gap = tempdf3.set_axis(["energy","country", "gdp", "population"], axis = 1)
         gap["population"] = (gap["population"]/1000000).round(2)
         plt.scatter(gap["gdp"],gap["energy"], s=gap["population"], alpha = 0.8)
         plt.xlabel("GDP of countries")
@@ -241,14 +235,12 @@ class EnergyClass:
         Takes two years as an interval of data related to energy consumption and emession \
         and output a scatter plot between emessions and total energy consumption \
         with size of the dots and colors reflecting countries´s populations.
-
         Parameters
         ---------------
         year1: str
                Begining year
         year2: str
                Ending year
-
         Output
         ---------------
         figure: Scatter plot
@@ -256,14 +248,18 @@ class EnergyClass:
             size and color of dots reflect countries´s average\
             population during the chosen period.
         '''
-        if year1 not in self.data["year"].tolist():
+        data = self.data
+        data.reset_index(inplace=True)
+        data = data.rename(columns = {'index':'year'})
+        if str(year1) not in data["year"].dt.strftime('%Y').tolist():
             raise ValueError(f"year {year1} not on the list of years")
-        if year2 not in self.data["year"].tolist():
+        if str(year2) not in data["year"].dt.strftime('%Y').tolist():
             raise ValueError(f"year {year2} not on the list of years")
         if year1 >= year2:
             raise ValueError(f" first year: {year1} \
             should be stricly less than second year: {year2}")
-        data = self.data[(self.data["year"]>= year1) & (self.data["year"]<= year2)]
+        data = data[(data["year"].dt.strftime('%Y').astype(int) >= year1) \
+                    & (data["year"].dt.strftime('%Y').astype(int)<= year2)]
         df_consumption = data.filter(like = "_consumption")
         df_country = data[["country","emissions"]]#get the df of the country column
         df_countries = pd.merge(df_country, df_consumption, left_index = True, right_index = True)
@@ -281,7 +277,6 @@ class EnergyClass:
         #plt_1 = plt.figure(figsize=(18, 10))
         ax = plt.gca()
         cm = plt.cm.get_cmap('RdYlBu')
-
         scatter = ax.scatter(df_scatter["emissions"], df_scatter["TOTAL_energy_consumption"] \
                              , s= df_scatter["population"]/1000000 \
                              ,c=df_scatter["population"]/1000000 ,vmin=0 \
@@ -295,4 +290,66 @@ class EnergyClass:
         plt.ylabel("Total energy consumption")
         handles, labels = scatter.legend_elements(prop="sizes", alpha=0.4)
         legend2 = ax.legend(handles, labels, loc="lower right", title="Sizes")
+        self.data = self.data.set_index("year")
+    def arima_prediction(self, country: str, n_periods: int):
+        '''
+        Takes a country identifier and a number of periods for future predictions. 
+        Uses the ARIMA algorithm for prediction. The hyperparameters are chosen based on iteration of\
+        all the combinations within their given range and finding the tuple that yields the smallest rmse.
+        Fits the data and predicts the outcome of both emissions and consumptions for the given country over\
+        the given number of periods.
+        DISCLAIMER: Itertools used instead of Auto-Arima because the "p_start" parameter can´t be set correctly
+        plots the two graphs of ARIMA prediction for emission and consumption stacked horizentally together.
+        Parameters
+        ---------------
+        country: string
+                name of the country to do the ARIMA prediction on
         
+        n_periods: integer
+                number of periods to predict
+        
+        ---------------
+        Figure: subplots one for the emission prediction and th eother for consumption prediction
+        '''
+        if self.file is False:
+            self.download()
+        if (type(n_periods) not in [int]) or (n_periods < 1):
+            raise Exception("Sorry, prediction periods must be an integer and bigger or equal to 1")
+        warnings.filterwarnings("ignore")
+        df_em = self.data[self.data["country"] == country]
+        df_cons = self.data[self.data["country"] == country].filter(like = "_consumption").drop([ "fossil_fuel_consumption","low_carbon_consumption", "primary_energy_consumption", "renewables_consumption"],axis=1).dropna()\
+        .sum(axis = 1).to_frame().set_axis(["all_consumptions"], axis = 1)
+        if (df_em["emissions"].isna().sum()>35):
+            raise Exception(f"Sorry, {country} does not have enough emission data to perform ARIMA")
+            return
+        df_em = df_em.filter(like = "em").dropna()
+        train = df_em["emissions"][:int(len(df_em["emissions"])*0.8)]
+        test = df_em["emissions"][int(len(df_em["emissions"])*0.8):]
+        p, d, q = range(1,5), range(1,2), range(1,5)
+        pdq_comb = list(itertools.product(p, d, q))
+        rmse = []
+        order = []
+        for pdq in pdq_comb:
+            try:
+                model = sm.tsa.arima.ARIMA(train, order = pdq).fit()
+                pred = model.predict(start = int(len(df_em["emissions"])*0.8),end = (len(df_em["emissions"])-1))
+                error = np.sqrt(mean_squared_error(test, pred))
+                order.append(pdq)
+                rmse.append(error)
+            except:
+                continue 
+        results = pd.DataFrame(index = order, data=rmse, columns = ["RMSE"])
+        hyperparameters = results.nsmallest(1, "RMSE").index[0]
+        #print(hyperparameters)
+        final_model = sm.tsa.arima.ARIMA(df_em["emissions"], order = (1,1,1)).fit()
+        prediction = final_model.predict(len(df_em), len(df_em)+n_periods)    
+        final_model2 = sm.tsa.arima.ARIMA(df_cons["all_consumptions"], order = (1, 1, 1)).fit()
+        prediction2 = final_model2.predict(len(df_cons), len(df_cons)+n_periods)
+        f, (ax1, ax2) = plt.subplots(1, 2)  
+        ax1.plot(df_em, color = "cornflowerblue")
+        ax1.plot(prediction, label="predictions", color = "yellowgreen")
+        ax1.set_title("ARIMA Emissions Prediction")
+        ax2.plot(df_cons, color = "cornflowerblue")
+        ax2.plot(prediction2, label="predictions", color = "red")
+        ax2.set_title("ARIMA Consumptions Prediction")
+        plt.tight_layout(4)
